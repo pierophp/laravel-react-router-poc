@@ -1,3 +1,18 @@
+<route>
+{
+    "uri": "/test"
+}
+</route>
+
+<php-action>
+    return ["message" => "Test"];
+</php-action>
+
+<php-loader>
+    return ["message" => "Test"];
+</php-loader>
+
+<template>
 import type { Route } from "./+types/home";
 import { useLoaderData } from "react-router";
 
@@ -16,7 +31,7 @@ export default function Home() {
                 <div className="max-w-[300px] w-full space-y-6 px-4">
                     <nav className="rounded-3xl border border-gray-200 p-6 dark:border-gray-700 space-y-4">
                         <p className="leading-6 text-gray-700 dark:text-gray-200 text-center">
-                            Hello: {message}
+                            Test: {message}
                         </p>
                     </nav>
                 </div>
@@ -24,7 +39,4 @@ export default function Home() {
         </main>
     );
 }
-export async function loader() {
-const response = await fetch("http://127.0.0.1:8000/");
-return await response.json();
-}
+</template>

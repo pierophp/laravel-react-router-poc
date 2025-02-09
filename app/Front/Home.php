@@ -1,3 +1,18 @@
+<route>
+{
+    "uri": "/"
+}
+</route>
+
+<php-action>
+    return ["message" => "Hello World From Laravel2"];
+</php-action>
+
+<php-loader>
+    return ["message" => "Hello World From Laravel2"];
+</php-loader>
+
+<template>
 import type { Route } from "./+types/home";
 import { useLoaderData } from "react-router";
 
@@ -24,7 +39,4 @@ export default function Home() {
         </main>
     );
 }
-export async function loader() {
-const response = await fetch("http://127.0.0.1:8000/");
-return await response.json();
-}
+</template>
