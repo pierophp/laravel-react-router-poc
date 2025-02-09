@@ -1,16 +1,18 @@
 <route>
 {
-    "uri": "/test"
+    "uri": "/"
 }
 </route>
 
-<php-action>
-    return ["message" => "Test"];
-</php-action>
+<php>
+function loader() {
+    return ["message" => "Hello World From Laravel Action"];
+}
 
-<php-loader>
-    return ["message" => "Test"];
-</php-loader>
+function action() {
+    return ["message" => "Hello World From Laravel Loader"];
+}
+</php>
 
 <template>
 import type { Route } from "./+types/home";
@@ -31,7 +33,7 @@ export default function Home() {
                 <div className="max-w-[300px] w-full space-y-6 px-4">
                     <nav className="rounded-3xl border border-gray-200 p-6 dark:border-gray-700 space-y-4">
                         <p className="leading-6 text-gray-700 dark:text-gray-200 text-center">
-                            Test: {message}
+                            {message}
                         </p>
                     </nav>
                 </div>

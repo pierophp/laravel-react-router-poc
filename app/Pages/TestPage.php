@@ -1,20 +1,22 @@
 <route>
 {
-    "uri": "/"
+    "uri": "/test"
 }
 </route>
 
-<php-action>
-    return ["message" => "Hello World From Laravel Action"];
-</php-action>
+<php>
+function loader() {
+    return ["message" => "Test"];
+}
 
-<php-loader>
-    return ["message" => "Hello World From Laravel Loader"];
-</php-loader>
+function action() {
+    return ["message" => "Test"];
+}
+</php>
 
 <template>
 import type { Route } from "./+types/home";
-import { useLoaderData } from "react-router";
+import { useLoaderData, Form } from "react-router";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -32,6 +34,10 @@ export default function Home() {
                     <nav className="rounded-3xl border border-gray-200 p-6 dark:border-gray-700 space-y-4">
                         <p className="leading-6 text-gray-700 dark:text-gray-200 text-center">
                             {message}
+                            <Form method="post">
+                                <input type="text" name="name" />
+                                <button type="submit">Submit</button>
+                            </Form>
                         </p>
                     </nav>
                 </div>

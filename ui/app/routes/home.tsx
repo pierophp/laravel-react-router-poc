@@ -28,3 +28,7 @@ export async function loader() {
 const response = await fetch("http://127.0.0.1:8000/");
 return await response.json();
 }
+export async function action() {
+const response = await fetch("http://127.0.0.1:8000/", {method:"POST"});
+return await response.json();
+}

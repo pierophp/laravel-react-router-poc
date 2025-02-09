@@ -20,13 +20,13 @@ class CompileCommand extends Command
 
     protected function compile()
     {
-        $files = array_diff(scandir("app/Front"), array('.', '..'));
+        $files = array_diff(scandir("app/Pages"), array('.', '..'));
         $routesImports = [];
         $routesDefinitions = [];
         $routesReact = [];
         foreach($files as $filename)
         {
-            $content = file_get_contents("app/Front/$filename");
+            $content = file_get_contents("app/Pages/$filename");
 
             $uri = null;
             preg_match('/<route>(.*?)<\/route>/s', $content, $matches);
@@ -41,46 +41,36 @@ class CompileCommand extends Command
 
             $filenameWithoutExt = pathinfo($filename, PATHINFO_FILENAME);
 
-            $routesReact[] = "\troute(\"" . $uri . "\", \"routes/" . strtolower($filenameWithoutExt) . ".tsx\")";
+            $reactRouteName = str_replace("page", "", strtolower($filenameWithoutExt));
 
-            preg_match('/<php-loader>(.*?)<\/php-loader>/s', $content, $matches);
+            $routesReact[] = "\troute(\"" . $uri . "\", \"routes/" . $reactRouteName . ".tsx\")";
 
-            if (!empty($matches[1])) {
-                $phpCode = trim($matches[1]);
-
-                $phpFilename = "app/Http/Controllers/Generated/{$filenameWithoutExt}LoaderController.php";
-
-                $routesImports[] = "use App\Http\Controllers\Generated\\{$filenameWithoutExt}LoaderController;";
-                $routesDefinitions[] = "Route::get('$uri', [{$filenameWithoutExt}LoaderController::class, 'index']);";
-
-
-                file_put_contents($phpFilename, "<?php\n\nnamespace App\Http\Controllers\Generated;\n\nuse Illuminate\Http\Request;\nuse App\Http\Controllers\Controller;\n\nclass {$filenameWithoutExt}LoaderController extends Controller\n{\n    public function index()\n    {\n        $phpCode;\n    }\n}\n");
-            }
-
-            preg_match('/<php-action>(.*?)<\/php-action>/s', $content, $matches);
+            preg_match('/<php>(.*?)<\/php>/s', $content, $matches);
 
             if (!empty($matches[1])) {
                 $phpCode = trim($matches[1]);
 
-                $phpFilename = "app/Http/Controllers/Generated/{$filenameWithoutExt}ActionController.php";
+                $phpFilename = "app/Http/Controllers/Generated/{$filenameWithoutExt}Controller.php";
 
-                $routesImports[] = "use App\Http\Controllers\Generated\\{$filenameWithoutExt}ActionController;";
-                $routesDefinitions[] = "Route::post('$uri', [{$filenameWithoutExt}ActionController::class, 'index']);";
-                $routesDefinitions[] = "Route::delete('$uri', [{$filenameWithoutExt}ActionController::class, 'index']);";
-                $routesDefinitions[] = "Route::put('$uri', [{$filenameWithoutExt}ActionController::class, 'index']);";
-                $routesDefinitions[] = "Route::patch('$uri', [{$filenameWithoutExt}ActionController::class, 'index']);";
+                $routesImports[] = "use App\Http\Controllers\Generated\\{$filenameWithoutExt}Controller;";
+                $routesDefinitions[] = "Route::get('$uri', [{$filenameWithoutExt}Controller::class, 'loader']);";
+                $routesDefinitions[] = "Route::post('$uri', [{$filenameWithoutExt}Controller::class, 'action']);";
+                $routesDefinitions[] = "Route::delete('$uri', [{$filenameWithoutExt}Controller::class, 'action']);";
+                $routesDefinitions[] = "Route::put('$uri', [{$filenameWithoutExt}Controller::class, 'action']);";
+                $routesDefinitions[] = "Route::patch('$uri', [{$filenameWithoutExt}Controller::class, 'action']);";
 
-                file_put_contents($phpFilename, "<?php\n\nnamespace App\Http\Controllers\Generated;\n\nuse Illuminate\Http\Request;\nuse App\Http\Controllers\Controller;\n\nclass {$filenameWithoutExt}ActionController extends Controller\n{\n    public function index()\n    {\n        $phpCode;\n    }\n}\n");
+                file_put_contents($phpFilename, "<?php\n\nnamespace App\Http\Controllers\Generated;\n\nuse Illuminate\Http\Request;\nuse App\Http\Controllers\Controller;\n\nclass {$filenameWithoutExt}Controller extends Controller\n{\n   $phpCode\n}\n");
             }
 
             preg_match('/<template>(.*?)<\/template>/s', $content, $matches);
             if (!empty($matches[1])) {
                 $reactCode = trim($matches[1]);
 
-                $reactFilename = "ui/app/routes/". strtolower($filenameWithoutExt) . ".tsx";
+                $reactFilename = "ui/app/routes/". $reactRouteName . ".tsx";
                 $reactLoader = "export async function loader() {\nconst response = await fetch(\"http://127.0.0.1:8000" . $uri . "\");\nreturn await response.json();\n}";
+                $reactAction = "export async function action() {\nconst response = await fetch(\"http://127.0.0.1:8000" . $uri . "\", {method:\"POST\"});\nreturn await response.json();\n}";
 
-                file_put_contents($reactFilename, $reactCode . "\n" . $reactLoader);
+                file_put_contents($reactFilename, $reactCode . "\n" . $reactLoader . "\n" . $reactAction);
             }
         }
 
