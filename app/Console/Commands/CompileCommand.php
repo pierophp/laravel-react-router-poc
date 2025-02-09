@@ -13,6 +13,8 @@ class CompileCommand extends Command
 
     protected $description = 'Compile front-end';
 
+    protected $watchFiles = [];
+
     public function handle()
     {
         $this->compile();
@@ -24,6 +26,9 @@ class CompileCommand extends Command
         $routesImports = [];
         $routesDefinitions = [];
         $routesReact = [];
+
+        $hasChanged = false;
+
         foreach($files as $filename)
         {
             $content = file_get_contents("app/Pages/$filename");
@@ -47,6 +52,8 @@ class CompileCommand extends Command
 
             preg_match('/<php>(.*?)<\/php>/s', $content, $matches);
 
+            $phpChanged = false;
+
             if (!empty($matches[1])) {
                 $phpCode = trim($matches[1]);
 
@@ -59,7 +66,13 @@ class CompileCommand extends Command
                 $routesDefinitions[] = "Route::put('$uri', [{$filenameWithoutExt}Controller::class, 'action']);";
                 $routesDefinitions[] = "Route::patch('$uri', [{$filenameWithoutExt}Controller::class, 'action']);";
 
-                file_put_contents($phpFilename, "<?php\n\nnamespace App\Http\Controllers\Generated;\n\nuse Illuminate\Http\Request;\nuse App\Http\Controllers\Controller;\n\nclass {$filenameWithoutExt}Controller extends Controller\n{\n   $phpCode\n}\n");
+                $phpMd5 = md5($phpCode);
+                if (empty($this->watchFiles[$phpFilename]) || $this->watchFiles[$phpFilename] !== $phpMd5) {
+                    $phpChanged = true;
+                    $hasChanged = true;
+                    $this->watchFiles[$phpFilename] = $phpMd5;
+                    file_put_contents($phpFilename, "<?php\n\nnamespace App\Http\Controllers\Generated;\n\nuse Illuminate\Http\Request;\nuse App\Http\Controllers\Controller;\n\nclass {$filenameWithoutExt}Controller extends Controller\n{\n   $phpCode\n}\n");
+                }
             }
 
             preg_match('/<template>(.*?)<\/template>/s', $content, $matches);
@@ -70,12 +83,20 @@ class CompileCommand extends Command
                 $reactLoader = "export async function loader() {\nconst response = await fetch(\"http://127.0.0.1:8000" . $uri . "\");\nreturn await response.json();\n}";
                 $reactAction = "export async function action() {\nconst response = await fetch(\"http://127.0.0.1:8000" . $uri . "\", {method:\"POST\"});\nreturn await response.json();\n}";
 
-                file_put_contents($reactFilename, $reactCode . "\n" . $reactLoader . "\n" . $reactAction);
+                $reactMd5 = md5($reactCode);
+                if ($phpChanged || empty($this->watchFiles[$reactFilename]) || $this->watchFiles[$reactFilename] !== $reactMd5) {
+                    $hasChanged = true;
+                    $this->watchFiles[$reactFilename] = $reactMd5;
+                    file_put_contents($reactFilename, $reactCode . "\n" . $reactLoader . "\n" . $reactAction);
+                }
             }
         }
 
-        file_put_contents("routes/web.php", "<?php\n\nuse Illuminate\Support\Facades\Route;\n" . implode("\n", $routesImports) . "\n\n" . implode("\n", $routesDefinitions) . "\n") ;
-        file_put_contents("ui/app/routes.ts", "import { type RouteConfig, route } from \"@react-router/dev/routes\";\n\nexport default [\n" . implode(",\n", $routesReact) . "\n] satisfies RouteConfig;\n") ;
+        if ($hasChanged)
+        {
+            file_put_contents("routes/web.php", "<?php\n\nuse Illuminate\Support\Facades\Route;\n" . implode("\n", $routesImports) . "\n\n" . implode("\n", $routesDefinitions) . "\n") ;
+            file_put_contents("ui/app/routes.ts", "import { type RouteConfig, route } from \"@react-router/dev/routes\";\n\nexport default [\n" . implode(",\n", $routesReact) . "\n] satisfies RouteConfig;\n") ;
+        }
 
         if ($this->option('watch')) {
             sleep(1);
