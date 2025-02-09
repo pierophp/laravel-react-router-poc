@@ -53,11 +53,11 @@ export default function Home() {
         </main>
     );
 }
-export async function loader() {
+export async function clientLoader() {
 const response = await fetch("http://127.0.0.1:8000/api/contact");
 return await response.json();
 }
-export async function action({ request }) {
+export async function clientAction({ request }) {
 const formData = await request.formData();
 const response = await fetch("http://127.0.0.1:8000/api/contact", {
 method:"POST",
