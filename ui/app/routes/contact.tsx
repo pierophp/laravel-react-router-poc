@@ -1,21 +1,3 @@
-<route>
-{
-    "uri": "/contact"
-}
-</route>
-
-<php>
-function loader() {
-    return ["title" => "Contact Page (From Loader)"];
-}
-
-function action() {
-    $name = request()->input('name');
-    return ["message" => "Laravel backend says: Hello " . $name];
-}
-</php>
-
-<template>
 import type { Route } from "./+types/home";
 import { useLoaderData, useActionData, Form } from "react-router";
 
@@ -71,4 +53,14 @@ export default function Home() {
         </main>
     );
 }
-</template>
+export async function loader() {
+const response = await fetch("http://127.0.0.1:8000/api/contact");
+return await response.json();
+}
+export async function action({ request }) {
+const formData = await request.formData();
+const response = await fetch("http://127.0.0.1:8000/api/contact", {
+method:"POST",
+body: formData});
+return await response.json();
+}
