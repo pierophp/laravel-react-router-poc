@@ -4,6 +4,8 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\Console\Input\InputOption;
+
 
 class CompileCommand extends Command
 {
@@ -12,6 +14,11 @@ class CompileCommand extends Command
     protected $description = 'Compile front-end';
 
     public function handle()
+    {
+        $this->compile();
+    }
+
+    protected function compile()
     {
         $files = array_diff(scandir("app/Front"), array('.', '..'));
         $routesImports = [];
@@ -32,9 +39,9 @@ class CompileCommand extends Command
                 continue;
             }
 
-            $routesReact[] = "\troute(\"" . $uri . "\", \"routes/test.tsx\")";
-
             $filenameWithoutExt = pathinfo($filename, PATHINFO_FILENAME);
+
+            $routesReact[] = "\troute(\"" . $uri . "\", \"routes/" . strtolower($filenameWithoutExt) . ".tsx\")";
 
             preg_match('/<php-loader>(.*?)<\/php-loader>/s', $content, $matches);
 
@@ -80,5 +87,14 @@ class CompileCommand extends Command
         file_put_contents("routes/web.php", "<?php\n\nuse Illuminate\Support\Facades\Route;\n" . implode("\n", $routesImports) . "\n\n" . implode("\n", $routesDefinitions) . "\n") ;
         file_put_contents("ui/app/routes.ts", "import { type RouteConfig, route } from \"@react-router/dev/routes\";\n\nexport default [\n" . implode(",\n", $routesReact) . "\n] satisfies RouteConfig;\n") ;
 
+        if ($this->option('watch')) {
+            sleep(1);
+            $this->compile();
+        }
+    }
+
+    protected function configure()
+    {
+        $this->addOption('watch', 'w', InputOption::VALUE_NONE, 'Watch mode');
     }
 }

@@ -5,11 +5,11 @@
 </route>
 
 <php-action>
-    return ["message" => "Hello World From Laravel2"];
+    return ["message" => "Hello World From Laravel Action"];
 </php-action>
 
 <php-loader>
-    return ["message" => "Hello World From Laravel2"];
+    return ["message" => "Hello World From Laravel Loader"];
 </php-loader>
 
 <template>
@@ -31,7 +31,7 @@ export default function Home() {
                 <div className="max-w-[300px] w-full space-y-6 px-4">
                     <nav className="rounded-3xl border border-gray-200 p-6 dark:border-gray-700 space-y-4">
                         <p className="leading-6 text-gray-700 dark:text-gray-200 text-center">
-                            Hello: {message}
+                            {message}
                         </p>
                     </nav>
                 </div>
