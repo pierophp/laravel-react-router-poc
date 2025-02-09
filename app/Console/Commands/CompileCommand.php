@@ -81,8 +81,8 @@ class CompileCommand extends Command
                 $reactCode = trim($matches[1]);
 
                 $reactFilename = "ui/app/routes/". $reactRouteName . ".tsx";
-                $reactLoader = "export async function loader() {\nconst response = await fetch(\"http://127.0.0.1:8000" . $uri . "\");\nreturn await response.json();\n}";
-                $reactAction = "export async function action() {\nconst response = await fetch(\"http://127.0.0.1:8000" . $uri . "\", {method:\"POST\"});\nreturn await response.json();\n}";
+                $reactLoader = "export async function loader() {\nconst response = await fetch(\"http://127.0.0.1:8000/api" . $uri . "\");\nreturn await response.json();\n}";
+                $reactAction = "export async function action({ request }) {\nconst formData = await request.formData();\nconst response = await fetch(\"http://127.0.0.1:8000/api" . $uri . "\", {\nmethod:\"POST\",\nbody: formData});\nreturn await response.json();\n}";
 
                 $reactMd5 = md5($reactCode);
                 if ($phpChanged || empty($this->watchFiles[$reactFilename]) || $this->watchFiles[$reactFilename] !== $reactMd5) {
@@ -96,7 +96,7 @@ class CompileCommand extends Command
 
         if ($hasChanged)
         {
-            file_put_contents("routes/web.php", "<?php\n\nuse Illuminate\Support\Facades\Route;\n" . implode("\n", $routesImports) . "\n\n" . implode("\n", $routesDefinitions) . "\n") ;
+            file_put_contents("routes/api.php", "<?php\n\nuse Illuminate\Support\Facades\Route;\n" . implode("\n", $routesImports) . "\n\n" . implode("\n", $routesDefinitions) . "\n") ;
             file_put_contents("ui/app/routes.ts", "import { type RouteConfig, route } from \"@react-router/dev/routes\";\n\nexport default [\n" . implode(",\n", $routesReact) . "\n] satisfies RouteConfig;\n") ;
         }
 

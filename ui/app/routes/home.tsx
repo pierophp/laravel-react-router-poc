@@ -25,10 +25,13 @@ export default function Home() {
     );
 }
 export async function loader() {
-const response = await fetch("http://127.0.0.1:8000/");
+const response = await fetch("http://127.0.0.1:8000/api/");
 return await response.json();
 }
-export async function action() {
-const response = await fetch("http://127.0.0.1:8000/", {method:"POST"});
+export async function action({ request }) {
+const formData = await request.formData();
+const response = await fetch("http://127.0.0.1:8000/api/", {
+method:"POST",
+body: formData});
 return await response.json();
 }
