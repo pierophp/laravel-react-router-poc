@@ -68,6 +68,7 @@ class CompileCommand extends Command
 
                 $phpMd5 = md5($phpCode);
                 if (empty($this->watchFiles[$phpFilename]) || $this->watchFiles[$phpFilename] !== $phpMd5) {
+                    \Log::info($phpFilename . " has changed.");
                     $phpChanged = true;
                     $hasChanged = true;
                     $this->watchFiles[$phpFilename] = $phpMd5;
@@ -86,6 +87,7 @@ class CompileCommand extends Command
                 $reactMd5 = md5($reactCode);
                 if ($phpChanged || empty($this->watchFiles[$reactFilename]) || $this->watchFiles[$reactFilename] !== $reactMd5) {
                     $hasChanged = true;
+                    \Log::info($reactFilename . " has changed.");
                     $this->watchFiles[$reactFilename] = $reactMd5;
                     file_put_contents($reactFilename, $reactCode . "\n" . $reactLoader . "\n" . $reactAction);
                 }
