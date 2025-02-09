@@ -6,10 +6,6 @@
 
 <php>
 function loader() {
-    return ["message" => "Hello World From Laravel Action"];
-}
-
-function action() {
     return ["message" => "Hello World From Laravel Loader"];
 }
 </php>
