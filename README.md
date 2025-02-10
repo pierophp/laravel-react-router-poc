@@ -28,3 +28,9 @@ Compiler:
 ```
 php artisan app:compile --watch
 ```
+
+If you want it to run in SPA mode:
+
+```
+php artisan app:compile --watch --spa
+```
